@@ -80,3 +80,33 @@ plot(network)
 **7) Compute the diameter with and without weights (if any) and determine the farthest vertices along with the path joining them. Take into account whether the network is directed or not.**
 
 **8) Visualize the network. Obtain the graphs that appear on the slides and the code and, very importantly, try to obtain the best possible visualization by using colors and varying all aspects of the graph necessary to do so.**
+
+##Davidson-Harel layout 
+```{r}
+plot(subnetwork1, layout = layout_with_dh, edge.color = 'darkgrey',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
+```
+
+##Fruchtermann and Reingold layout
+```{r}
+plot(subnetwork1, layout = layout_with_fr, edge.color = 'darkgrey',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
+```
+
+##GEM force-directed layout
+```{r}
+plot(subnetwork1, layout = layout_with_gem, edge.color = 'darkgrey',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
+```
+
+##Graphopt layout
+```{r}
+plot(subnetwork1, layout = layout_with_graphopt, edge.color = 'darkgrey',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
+```
+
+##Kamada and Kawai layout
+```{r}
+plot(subnetwork1, layout = layout_with_kk, edge.color = 'darkgrey',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
+```
+
+##Multidimensional Scaling layout
+```{r}
+plot(subnetwork1, layout = layout_with_mds, edge.color = 'darkgrey',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
+```
