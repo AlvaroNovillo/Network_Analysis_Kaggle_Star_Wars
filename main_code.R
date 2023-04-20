@@ -1,7 +1,7 @@
 library(jsonlite)
 ########################LOAD DATA################################
 # Set the directory path where the JSON files are located
-directory_path <- "C:/Users/theib/Documents/MSDS/4th Quarter/Network Analysis/Final_proyect_Star_Wars/data/" #CHANGE IT WITH YOUR DATA PATH
+directory_path <- "C:/Users/theib/OneDrive/Documentos/Network_Analysis_Kaggle_Star_Wars/data" #CHANGE IT WITH YOUR DATA PATH
 
 # Get the list of all JSON files in the directory
 json_files <- list.files(path = directory_path, pattern = "*.json", full.names = TRUE)
@@ -25,7 +25,9 @@ edges <- json_data$links
 #####################DATA ANALYSIS##########################333
 library(igraph)
 # Create a graph from the data
-network <- graph_from_data_frame(edges, directed = T)
+network <- graph_from_data_frame(edges, directed = F) %>%
+  set_vertex_attr("name", value = nodes$name) %>%
+  set_vertex_attr("color", value = nodes$colour)
 E(network)$weight <- edges$value
 
 
@@ -33,8 +35,8 @@ E(network)$weight <- edges$value
 V(network)$color <- nodes$colour
 
 # Set the label of each node
-V(network)$label <- nodes$name
-
+V(network)$label <- 
+V(network)
 # Plot the graph
-A = as_adjacency_matrix(network, attr="weight")
+#A = as_adjacency_matrix(network, attr="weight")
 plot(network)
