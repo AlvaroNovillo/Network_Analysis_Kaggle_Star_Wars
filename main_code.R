@@ -16,8 +16,14 @@ desired_file <- json_files[22]
 json_data <- fromJSON(desired_file)
 
 # Access the nodes and edges
-nodes <- json_data$nodes
+library("readxl")
+nodes <- read_excel("C:/Users/theib/OneDrive/Documentos/Network_Analysis_Kaggle_Star_Wars/nodes.xlsx")
 edges <- json_data$links
+
+library("writexl")
+write_xlsx(nodes,"C:/Users/theib/OneDrive/Documentos/Network_Analysis_Kaggle_Star_Wars/nodes.xlsx")
+
+
 nodes$name.real = nodes$name
 nodes$name = c(0:(length(nodes$name)-1))
 
@@ -56,7 +62,7 @@ get.diameter(network)
 
 
 ################### Subgraphs of different movies ################
-subnetwork1 <- subgraph.edges(network, E(network)[E(network)$weight>max(E(network)$weight)*0.2]) #0.5 2 subgraphs, 0.3 ep 7 and ep 1-6, 0.2 main characters
+subnetwork1 <- subgraph.edges(network, E(network)[E(network)$weight>max(E(network)$weight)*0.5]) #0.5 2 subgraphs, 0.3 ep 7 and ep 1-6, 0.2 main characters
 m2 <- layout_nicely(subnetwork1)
 plot(subnetwork1,edge.color = 'black',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
 
@@ -64,7 +70,7 @@ plot(subnetwork1,edge.color = 'black',layout = m2,edge.width = (edges$value - mi
 Siths_network <- delete.vertices(network, V(network)[V(network)$color != '#000000'])
 m2 <- layout_nicely(Siths_network)
 plot(Siths_network)
-################### Siths network ################
+################### Heroes network ################
 Heroes_network <- delete.vertices(network, V(network)[V(network)$color == '#000000'])
 m2 <- layout_nicely(Heroes_network)
 plot(Heroes_network,edge.color = 'black',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
