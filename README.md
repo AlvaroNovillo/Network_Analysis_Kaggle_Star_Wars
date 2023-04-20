@@ -9,3 +9,5 @@ Hacer análisis multivariante entre escenas en las que aparecen los peronajes y 
 
 
 Características principales de la red: Interacción principal, personaje que más escenas tiene, etc.
+
+Al redactar la parte de vsualización describir el proceso, pr ejemplo pimero pintar los ejes en negro y cambiarlo a gris para comproba que se ve mejor y que el vea el proceso, porque habla de que gradúa el esfuerzo del detalle
