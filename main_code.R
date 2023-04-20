@@ -10,7 +10,7 @@ json_files <- list.files(path = directory_path, pattern = "*.json", full.names =
 print(json_files)
 
 # Choose the desired JSON file
-desired_file <- json_files[1]
+desired_file <- json_files[22]
 
 # Load the JSON file into R
 json_data <- fromJSON(desired_file)
@@ -18,6 +18,8 @@ json_data <- fromJSON(desired_file)
 # Access the nodes and edges
 nodes <- json_data$nodes
 edges <- json_data$links
+nodes$name.real = nodes$name
+nodes$name = c(0:(length(nodes$name)-1))
 
 
 
@@ -25,9 +27,7 @@ edges <- json_data$links
 #####################DATA ANALYSIS##########################333
 library(igraph)
 # Create a graph from the data
-network <- graph_from_data_frame(edges, directed = F) %>%
-  set_vertex_attr("name", value = nodes$name) %>%
-  set_vertex_attr("color", value = nodes$colour)
+network <- graph_from_data_frame(edges, vertices = nodes, directed = FALSE)
 E(network)$weight <- edges$value
 
 
@@ -35,8 +35,14 @@ E(network)$weight <- edges$value
 V(network)$color <- nodes$colour
 
 # Set the label of each node
-V(network)$label <- 
-V(network)
+V(network)$label <- nodes$name.real
+
 # Plot the graph
-#A = as_adjacency_matrix(network, attr="weight")
+A = as_adjacency_matrix(network, attr="weight")
 plot(network)
+
+################### Adjacency plot ################
+subnetwork1 <- subgraph.edges(network, E(network)[E(network)$weight>max(E(network)$weight)*0.05])
+plot(subnetwork1)
+
+
