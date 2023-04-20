@@ -6,8 +6,7 @@ directory_path <- "C:/Users/theib/OneDrive/Documentos/Network_Analysis_Kaggle_St
 # Get the list of all JSON files in the directory
 json_files <- list.files(path = directory_path, pattern = "*.json", full.names = TRUE)
 
-# Display the list of JSON files
-print(json_files)
+
 
 # Choose the desired JSON file
 desired_file <- json_files[22]
@@ -16,12 +15,9 @@ desired_file <- json_files[22]
 json_data <- fromJSON(desired_file)
 
 # Access the nodes and edges
-library("readxl")
-nodes <- read_excel("C:/Users/theib/OneDrive/Documentos/Network_Analysis_Kaggle_Star_Wars/nodes.xlsx")
-edges <- json_data$links
 
-library("writexl")
-write_xlsx(nodes,"C:/Users/theib/OneDrive/Documentos/Network_Analysis_Kaggle_Star_Wars/nodes.xlsx")
+nodes <- json_data$nodes
+edges <- json_data$links
 
 
 nodes$name.real = nodes$name
@@ -32,6 +28,9 @@ nodes$name = c(0:(length(nodes$name)-1))
 
 #####################DATA ANALYSIS##########################333
 library(igraph)
+library(tidyr)
+library(ggplot2)
+library(dplyr)
 
 # Create a graph from the data
 network <- graph_from_data_frame(edges, vertices = nodes, directed = FALSE)
@@ -56,14 +55,25 @@ cat("Order of the network:", gorder(network), "\n")
 cat("Size of the network:", gsize(network), "\n")
 #Fardest vertices
 farthest.nodes(network, weights = E(network)$weight)
-geodesic_distance <- shortest.paths(network, uncon)
+geodesic_distance <- shortest.paths(network)
 
 get.diameter(network)
+#################Adjacency matrix #############################
+# Get the adjacency matrix and convert to long format
+adj_matrix <- as_adjacency_matrix(network,attr = "weight",sparse = T)
 
+# Set the row and column names of the matrix to the node names
+rownames(adj_matrix) <- nodes$name.real
+colnames(adj_matrix) <- nodes$name.real
+
+# Plot the matrix
+library(corrplot)
+corrplot(as.matrix(adj_matrix),  method = 'shade',is.corr = FALSE,col.lim = c(0,max(max(as.matrix(adj_matrix)))), order = 'AOE', diag = FALSE, tl.cex = 0.3,col = COL1('YlOrBr', 10),tl.col = 'black')
 
 ################### Subgraphs of different movies ################
 subnetwork1 <- subgraph.edges(network, E(network)[E(network)$weight>max(E(network)$weight)*0.5]) #0.5 2 subgraphs, 0.3 ep 7 and ep 1-6, 0.2 main characters
-m2 <- layout_nicely(subnetwork1)
+#m2 <- layout_nicely(subnetwork1)
+m2 <- layout_as_tree(subnetwork1)
 plot(subnetwork1,edge.color = 'black',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
 
 ################### Siths network ################
