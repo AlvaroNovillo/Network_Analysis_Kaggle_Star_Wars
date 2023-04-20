@@ -26,6 +26,7 @@ nodes$name = c(0:(length(nodes$name)-1))
 
 #####################DATA ANALYSIS##########################333
 library(igraph)
+
 # Create a graph from the data
 network <- graph_from_data_frame(edges, vertices = nodes, directed = FALSE)
 E(network)$weight <- edges$value
@@ -38,11 +39,33 @@ V(network)$color <- nodes$colour
 V(network)$label <- nodes$name.real
 
 # Plot the graph
-A = as_adjacency_matrix(network, attr="weight")
-plot(network)
+#layout 
+m2 <- layout_nicely(network)
 
-################### Adjacency plot ################
-subnetwork1 <- subgraph.edges(network, E(network)[E(network)$weight>max(E(network)$weight)*0.05])
-plot(subnetwork1)
+plot(network,edge.color = 'black',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
 
+######################## NETWORK PROPERTIES ##########################
+# Order and size of the network 
+cat("Order of the network:", gorder(network), "\n")
+cat("Size of the network:", gsize(network), "\n")
+#Fardest vertices
+farthest.nodes(network, weights = E(network)$weight)
+geodesic_distance <- shortest.paths(network, uncon)
+
+get.diameter(network)
+
+
+################### Subgraphs of different movies ################
+subnetwork1 <- subgraph.edges(network, E(network)[E(network)$weight>max(E(network)$weight)*0.2]) #0.5 2 subgraphs, 0.3 ep 7 and ep 1-6, 0.2 main characters
+m2 <- layout_nicely(subnetwork1)
+plot(subnetwork1,edge.color = 'black',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
+
+################### Siths network ################
+Siths_network <- delete.vertices(network, V(network)[V(network)$color != '#000000'])
+m2 <- layout_nicely(Siths_network)
+plot(Siths_network)
+################### Siths network ################
+Heroes_network <- delete.vertices(network, V(network)[V(network)$color == '#000000'])
+m2 <- layout_nicely(Heroes_network)
+plot(Heroes_network,edge.color = 'black',layout = m2,edge.width = (edges$value - min(edges$value))/(max(edges$value) - min(edges$value))*(7-2) + 2 , vertex.size=(nodes$value - min(nodes$value))/(max(nodes$value) - min(nodes$value))*(20-5) + 7)
 
