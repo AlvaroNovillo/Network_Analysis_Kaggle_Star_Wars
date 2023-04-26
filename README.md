@@ -1,5 +1,6 @@
 # Network_Analysis_Kaggle_Star_Wars
-Network analysis of Star Wars character interactions
+Network analysis of Star Wars character interactions. 
+If you have any trouble running it, please contact us at the following email address: 100483441@alumnos.uc3m.es
 # To Do things
 1. Explicar la red. Análisis de la red. Primer grafo y describir caracterisitcas principales. Orden y tamaño. Subredes. Degree distrib. # components of the red. Diametro con y sin peso. Fardest nodes. Visualización
 
