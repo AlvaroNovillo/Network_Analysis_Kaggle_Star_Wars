@@ -116,6 +116,7 @@ Heroes_network <- delete.vertices(network, V(network)[V(network)$role != 'h'])
 
 
 **4) Compute the order and size of the network and certain induced subnetworks of interest and draw conclusions about these values. If the network is directed, repeat the operation for in, out and total.**
+
 To begin the analysis of the network, we first created an adjacency matrix using the as_adjacency_matrix() function from the igraph package in R. The attr argument was set to "weight" to take into account the weighted interactions between the characters. The resulting matrix was then plotted as a heatmap using the corrplot package. Each node was identified with its corresponding character name, which was set as the row and column names of the matrix. This allowed us to visualize the strength and direction of the interactions between characters.
 
 ```{r}
@@ -216,7 +217,7 @@ points(0:max(strength(network)),graph_strength_distribution(network),pch=20)
 
 ```
 
-As expected, the degree distribution is highly skewed. Moreover, even though the weighted distribution contains higher values than the standard degree distribution, he frequency of these high values is very low, and the mass of the distribution is centered in lower values, as the previous one.
+As expected, the degree distribution is negatively skewed. Moreover, even though the weighted distribution contains higher values than the average degree distribution, the frequency of these high values is very low, and the mass of the distribution is centered in lower values, as the previous one.
 
 
 **6) Obtain the number of components of the network (weak and strong if the network is directed).**
