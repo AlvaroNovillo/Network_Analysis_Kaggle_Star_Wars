@@ -162,7 +162,7 @@ cat("Average degree:", mean(degree(network)), "\n")
 In the case of the previously defined subnetworks, we have:
 
 - Order:
-```{r, include=FALSE}
+```{r,echo = FALSE}
 cat("Order of the network that contains the top 50% characters:", gorder(subnetwork1), "\n")
 cat("Order of the network that contains the top 70% characters:", gorder(subnetwork2), "\n")
 cat("Order of the network that contains the top 80% characters:", gorder(subnetwork3), "\n")
@@ -171,7 +171,7 @@ cat("Order of the network that contains the heroes:", gorder(Heroes_network), "\
 ```
 
 - Size:
-```{r, include=FALSE}
+```{r,echo = FALSE}
 cat("Size of the network that contains the top 50% characters:", gsize(subnetwork1), "\n")
 cat("Size of the network that contains the top 70% characters:", gsize(subnetwork2), "\n")
 cat("Size of the network that contains the top 80% characters:", gsize(subnetwork3), "\n")
