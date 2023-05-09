@@ -117,6 +117,7 @@ Heroes_network <- delete.vertices(network, V(network)[V(network)$role != 'h'])
 
 **4) Compute the order and size of the network and certain induced subnetworks of interest and draw conclusions about these values. If the network is directed, repeat the operation for in, out and total.**
 To begin the analysis of the network, we first created an adjacency matrix using the as_adjacency_matrix() function from the igraph package in R. The attr argument was set to "weight" to take into account the weighted interactions between the characters. The resulting matrix was then plotted as a heatmap using the corrplot package. Each node was identified with its corresponding character name, which was set as the row and column names of the matrix. This allowed us to visualize the strength and direction of the interactions between characters.
+
 ```{r}
 adj_matrix <- as_adjacency_matrix(network,attr = "weight",sparse = T)
 
@@ -128,9 +129,11 @@ colnames(adj_matrix) <- nodes$name.real
 library(corrplot)
 corrplot(as.matrix(adj_matrix),  method = 'shade',is.corr = FALSE,col.lim = c(0,max(max(as.matrix(adj_matrix)))), order = 'AOE', diag = FALSE, tl.cex = 0.3,col = COL1('YlOrBr', 10),tl.col = 'black')
 ```
+
 Upon inspecting the adjacency matrix, we observed that certain characters such as Darth Vader, Han Solo, and Chewbacca had the highest number of interactions with other characters. These characters had the most weighted links, indicating a significant amount of interaction with other characters in the network.
 
-To further investigate the relationship between the total screenplay of the characters and the number of interactions, we created a barplot showing the top 10 characters with the highest screenplayt, allowing us to compare the total screenplay of each character with their corresponding number of interactions. 
+To further investigate the relationship between the total screenplay of the characters and the number of interactions, we created a barplot showing the top 10 characters with the highest screenplay, allowing us to compare the total screenplay of each character with their corresponding number of interactions. 
+
 ```{r}
 top_nodes <- nodes[order(nodes$value, decreasing = TRUE),][1:10,]
 
@@ -139,10 +142,13 @@ print(top_nodes)
 barplot(top_nodes$value, 
         names.arg = top_nodes$name.real, 
         main = "Top Characters with the highest screenplay", 
-        xlab = "Character Name", 
         ylab = "Screenplay", 
-        col = "steelblue")
+        col = "steelblue",
+        las=2)
+
+
 ```
+
 The resulting plot shows that the characters with the highest total screenplay are the main characters of the saga (as expected), and also have a high number of interactions with other characters in the network.
 
 After this initial inspection, the general properties of the network (order, size, and average degree) are:
