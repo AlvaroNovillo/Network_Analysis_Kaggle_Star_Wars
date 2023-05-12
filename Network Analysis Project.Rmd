@@ -29,7 +29,7 @@ remotes::install_github("mattflor/chorddiag")
 library(chorddiag)
 ```
 
-
+## Part 1 
 **1) Explain the network including which vertices and edges form it, as well as any additional attributes that may form the network, its vertices and/or its edges.**
 
 We are going to study a Star Wars social network (this network was downloaded from kaggle at <https://www.kaggle.com/datasets/ruchi798/star-wars>). The nodes of this network are the characters of the first seven films and they are connected if they speak with each other in the same scene (this corresponds to the file "starwars-full-interactions-allCharacters-merged.json" from the downloaded data). 
@@ -331,3 +331,44 @@ To better visualize the edges, we can use a chord diagram. It allows us to see t
 adj_matrix <- as_adjacency_matrix(network,attr = "weight",sparse = T)
 chorddiag(as.matrix(adj_matrix),showTicks = FALSE, margin = 40, groupnameFontsize = 4)
 ```
+
+## Centrality meassures
+
+### Vertex centrality meassures
+
+Let's examine some centrality measures to determine which character in the Star Wars saga has the most significance based on interactions.
+
+To begin, we will sort the edges of our network according to their degree:
+
+```{r}
+#Unweighted case
+sw_vertices <- sort.int(degree(network),decreasing=TRUE,index.return=TRUE)
+sw_vertices$x[1:5]
+
+```
+
+We can observe that Darth Vader and Obi-Wan have the highest degree among the characters in the network.
+
+```{r}
+sw_weighted_vertices <- sort.int(strength(network),decreasing=TRUE,index.return=TRUE)
+sw_weighted_vertices$x[1:5]
+```
+
+However, if we take into consideration the weights in the network (i.e., the number of interactions shared by those two characters), we can see that Han Solo and C-3PO have the most interactions in the series, followed by Chewbacca and R2-D2. It is interesting to note that Obi-Wan is not on this list because he may be connected to many characters, but the number of interactions shared between them is not as significant as the other characters in the franchise.
+
+### Edge centrality meassures
+The most common way to assess the centrality of an edge is by using edge betweenness. As previously, we will determine the betweenness centrality both with and without weights.
+
+```{r}
+sw_betweenness <- sort.int(betweenness(network,normalized=TRUE,weights=rep(1,ecount(network))),
+                               decreasing=TRUE,index.return=TRUE)
+sw_betweenness$x[1:5]
+
+```
+Based solely on the connections between characters, Darth Vader remains the most central character in the saga, followed by Obi-Wan and C-3PO. Let's examine what happens when we consider the number of interactions between characters, i.e., the edge weights.
+```{r}
+sw_weighted_betweenness <- sort.int(betweenness(network,normalized=TRUE,weights=1/E(network)$weight),
+                                        decreasing=TRUE,index.return=TRUE)
+sw_weighted_betweenness$x[1:5]
+```
+In this instance, Darth Vader still retains the title of the most significant character in the franchise, followed by R2-D2 and Han. It is worth noting that C-3PO and Obi-Wan are also included in the top five once more.
