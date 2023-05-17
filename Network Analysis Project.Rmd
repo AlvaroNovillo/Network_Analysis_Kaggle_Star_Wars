@@ -356,6 +356,23 @@ sw_weighted_vertices$x[1:5]
 
 However, if we take into consideration the weights in the network (i.e., the number of interactions shared by those two characters), we can see that Han Solo and C-3PO have the most interactions in the series, followed by Chewbacca and R2-D2. It is interesting to note that Obi-Wan is not on this list because he may be connected to many characters, but the number of interactions shared between them is not as significant as the other characters in the franchise.
 
+In addition to degree and strength centrality, another centrality measure that can provide insights into the significance of characters in the Star Wars saga based on their interactions is eigenvector centrality. Eigenvector centrality considers not only the number of connections a character has but also the importance of those connections. It assigns higher centrality scores to characters who are connected to other highly central characters.
+
+Eigenvector centrality is important in network analysis because it accounts for the influence and prominence of the nodes a character is connected to. By incorporating the centrality of neighboring nodes, eigenvector centrality captures the idea that the importance of a character's connections depends on the importance of the characters they are connected to. 
+
+```{r}
+# Assuming you have already created the 'network' object
+
+# Compute eigenvector centrality
+eigen_centrality <- sort.int(eigen_centrality(network,scale=FALSE,
+                                    weights=rep(1,ecount(network)))$vector,
+                                    decreasing=TRUE,index.return=TRUE)
+eigen_centrality$x[1:10]
+```
+According to their connections and the influence of those connections, characters such as Darth Vader, Obi-Wan, C-3PO, Han, and R2-D2 exhibit a relatively high degree of eigenvector centrality, indicating their significance in the network.
+
+
+
 ### Edge centrality meassures
 The most common way to assess the centrality of an edge is by using edge betweenness. As previously, we will determine the betweenness centrality both with and without weights.
 
@@ -372,3 +389,47 @@ sw_weighted_betweenness <- sort.int(betweenness(network,normalized=TRUE,weights=
 sw_weighted_betweenness$x[1:5]
 ```
 In this instance, Darth Vader still retains the title of the most significant character in the franchise, followed by R2-D2 and Han. It is worth noting that C-3PO and Obi-Wan are also included in the top five once more.
+
+## Density of the network
+
+### Local density
+To study the local density of the network, we can examine the number of cliques and the length of the maximal cliques. A clique is a subset of nodes in a network where each node is directly connected to every other node in the subset. The length of a clique refers to the number of nodes within that clique.
+```{r}
+
+# Compute the number of cliques and the length of the maximal cliques
+cliques <- cliques(network)
+num_cliques <- length(cliques)
+max_clique_length <- max(sapply(cliques, length))
+
+# Count the number of cliques by length
+clique_lengths <- table(sapply(cliques, length))
+
+# Count the number of maximal cliques by length
+maximal_cliques <- maximal.cliques(network)
+maximal_lengths <- table(sapply(maximal_cliques, length))
+
+# Print the results
+cat("Cliques:\n")
+cat("Length of cliques:", paste(names(clique_lengths), collapse = " "), "\n")
+cat("Number of cliques:", paste(clique_lengths, collapse = " "), "\n\n")
+
+cat("Maximal cliques:\n")
+cat("Length of maximal cliques:", paste(names(maximal_lengths), collapse = " "), "\n")
+cat("Number of maximal cliques:", paste(maximal_lengths, collapse = " "), "\n")
+
+```
+
+The results show that there are cliques of various lengths, ranging from length 1 to length 9. The number of cliques also varies, with the highest number observed for cliques of length 4.
+
+Maximal cliques are the largest possible cliques within a network, meaning that they cannot be extended by adding another node without violating the condition of every node being connected to every other node. The results indicate that there are maximal cliques of different lengths, ranging from length 1 to length 9. The highest number of maximal cliques is observed for cliques of length 3.
+
+Based on these findings, we can conclude that the network exhibits a mixture of local density levels. The presence of cliques of various lengths suggests that there are cohesive groups within the network, where nodes have strong connections with each other. The higher number of cliques of length 4 and the higher number of maximal cliques of length 3 indicate that there are subsets of nodes that form tightly connected clusters. Even though, of the 444 cliques of length 3, only 22 of them are maximal. This indicates that the network is sparse, i.e., it is not specially dense. 
+
+This suggests that there are both highly connected subgroups and areas with relatively lower connectivity within the network, as expected when we previously inspected the former subnetworks of different characters based on their relationship and strength of the link. 
+
+Lets take a deeper look into the largest cliques of the network:
+
+```{r}
+largest_cliques(network)
+```
+
