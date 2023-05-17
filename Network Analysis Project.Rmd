@@ -473,4 +473,31 @@ print(paste("Average Shortest Path Length:", round(shortest_path_length,2)))
 ```
 Despite the low density previously found, the clustering coefficient of 0.35 suggests a moderate level of clustering, implying that nodes have a tendency to form local connections or clusters with their neighbors. This indicates the presence of cohesive groups within the network.
 
-Furthermore, the average shortest path length of 3.9 indicates a relatively short path required to travel from one node to another. Despite the sparse nature of the network, the network is relatively well-connected. 
+Furthermore, the average shortest path length of 3.9 indicates a relatively short path required to travel from one node to another. Despite the sparse nature of the network, the network is relatively well-connected.
+
+## Small-World like structure
+
+Since the small-world property appears to hold, lets check if such structure is actually present. To do so, we will generate large number of random networks with the same number of vertices and edges than those of the Star Wars network. Then, for each network we obtain the clustering coefficient and the average path length.
+```{r}
+set.seed(10)
+n_trials = 1000
+N = length(V(network))
+L = length(E(network))
+num_tran <- vector(mode="numeric",length=n_trials)
+num_ave_path_length <- vector(mode="numeric",length=n_trials)
+for (i in 1 : n_trials){
+  ER_graph <- sample_gnm(n=N,m=L)
+  num_tran[i] <- transitivity(ER_graph)
+  num_ave_path_length[i] <- mean_distance(ER_graph)
+  
+}
+par(mfrow=c(2,1))
+hist(num_tran,
+     xlab="Clustering coefficients",ylab="Density",main="SW clustering: 0.35")
+hist(num_ave_path_length,
+     xlab="Average path length",ylab="Density",main="SW clustering: 3.9")
+```
+
+With the results obtained, we can confirm that our network does not hold the Small-World property, since both the clustering and the average geodesic distance are larger than the ones found in networks with the same number of vertices and edges. 
+
+This former analysis suggest that our network has a tendency to form groups between characters, but those connections are relatively distant, even among the characters of the same group. In the context of the movies, this result is reflected since each character has its own storyline and these arc-lines are not commonly influenced by other characters of the same team. 
