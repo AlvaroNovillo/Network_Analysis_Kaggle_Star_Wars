@@ -501,3 +501,5 @@ hist(num_ave_path_length,
 With the results obtained, we can confirm that our network does not hold the Small-World property, since both the clustering and the average geodesic distance are larger than the ones found in networks with the same number of vertices and edges. 
 
 This former analysis suggest that our network has a tendency to form groups between characters, but those connections are relatively distant, even among the characters of the same group. In the context of the movies, this result is reflected since each character has its own storyline and these arc-lines are not commonly influenced by other characters of the same team. 
+
+## Community detection
