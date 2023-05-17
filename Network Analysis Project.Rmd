@@ -392,8 +392,7 @@ In this instance, Darth Vader still retains the title of the most significant ch
 
 ## Density of the network
 
-### Local density
-To study the local density of the network, we can examine the number of cliques and the length of the maximal cliques. A clique is a subset of nodes in a network where each node is directly connected to every other node in the subset. The length of a clique refers to the number of nodes within that clique.
+To study the density of the network, we can examine the number of cliques and the length of the maximal cliques. A clique is a subset of nodes in a network where each node is directly connected to every other node in the subset. The length of a clique refers to the number of nodes within that clique.
 ```{r}
 
 # Compute the number of cliques and the length of the maximal cliques
@@ -432,4 +431,46 @@ Lets take a deeper look into the largest cliques of the network:
 ```{r}
 largest_cliques(network)
 ```
+To further proof the sparse nature of the network, we can compute the density of the network as:
+$$
+Density = (\text{Number of edges}) / (\text{Number of possible edges})
+$$
+Let's calculate the density using the information obtained before:
 
+Order of the network: 111 (number of nodes)
+Size of the network: 444 (number of edges)
+```{r}
+edge_density(network)
+```
+The calculated density of approximately 0.0727 indicates that the network is sparse. This means that the actual connections between the nodes represent a small proportion of all possible connections, indicating a relatively low level of overall connectivity in the network.
+
+## Network connectivity
+
+Now, lets take a closer look to the network connectivity. To do so, we will extract the Giant Connected Component (GCC) of the network of characters
+```{r}
+# Find the connected components
+components <- clusters(network)
+
+biggest_cluster_id <- which.max(components$csize)
+
+# ids
+vert_ids <- V(network)[components$membership == biggest_cluster_id]
+
+# subgraph
+giant_component <- induced_subgraph(network, vert_ids)
+```
+
+Then, the clustering and shortest path length of such components are:
+```{r}
+# Compute the clustering coefficient
+clustering_coefficient <- transitivity(giant_component, type = "globalundirected")
+print(paste("Clustering Coefficient:", round(clustering_coefficient,2)))
+
+# Compute the average shortest path length
+shortest_path_length <- mean_distance(giant_component, directed = FALSE, unconnected = FALSE)
+print(paste("Average Shortest Path Length:", round(shortest_path_length,2)))
+
+```
+Despite the low density previously found, the clustering coefficient of 0.35 suggests a moderate level of clustering, implying that nodes have a tendency to form local connections or clusters with their neighbors. This indicates the presence of cohesive groups within the network.
+
+Furthermore, the average shortest path length of 3.9 indicates a relatively short path required to travel from one node to another. Despite the sparse nature of the network, the network is relatively well-connected. 
