@@ -344,7 +344,6 @@ To begin, we will sort the edges of our network according to their degree:
 #Unweighted case
 sw_vertices <- sort.int(degree(network),decreasing=TRUE,index.return=TRUE)
 sw_vertices$x[1:5]
-
 ```
 
 We can observe that Darth Vader and Obi-Wan have the highest degree among the characters in the network.
@@ -430,6 +429,10 @@ Lets take a deeper look into the largest cliques of the network:
 
 ```{r}
 largest_cliques(network)
+large_clique_1 <- induced_subgraph(network, largest_cliques(network)[[1]])
+plot.net(large_clique_1)
+large_clique_2 <- induced_subgraph(network, largest_cliques(network)[[2]])
+plot.net(large_clique_2)
 ```
 To further proof the sparse nature of the network, we can compute the density of the network as:
 $$
@@ -503,3 +506,67 @@ With the results obtained, we can confirm that our network does not hold the Sma
 This former analysis suggest that our network has a tendency to form groups between characters, but those connections are relatively distant, even among the characters of the same group. In the context of the movies, this result is reflected since each character has its own storyline and these arc-lines are not commonly influenced by other characters of the same team. 
 
 ## Community detection
+
+## Maximal modularity
+```{r}
+starwars_op <- cluster_optimal(giant_component)
+starwars_op
+```
+
+```{r}
+sizes(starwars_op)
+```
+
+```{r}
+modularity(starwars_op)
+```
+
+```{r}
+plot(starwars_op,giant_component,main="Karate network with maximal modularity")
+```
+
+## Fast greedy algorithm
+```{r}
+starwars_fg <- cluster_fast_greedy(giant_component)
+sizes(starwars_fg)
+modularity(starwars_fg)
+plot(starwars_fg,giant_component,main="Karate network with maximal modularity")
+```
+
+## Louvain algorithm
+```{r}
+starwars_lv <- cluster_louvain(giant_component)
+sizes(starwars_lv)
+modularity(starwars_lv)
+plot(starwars_lv,giant_component,main="Karate network with maximal modularity")
+```
+
+## Label propagation algorithm
+```{r}
+starwars_lp <- cluster_label_prop(giant_component,initial=as.vector(membership(starwars_lv)))
+sizes(starwars_lp)
+modularity(starwars_lp)
+plot(starwars_lp,giant_component,main="Karate network with maximal modularity")
+```
+
+## Walktrap algorithm
+```{r}
+starwars_wa <- cluster_walktrap(giant_component)
+sizes(starwars_wa)
+modularity(starwars_wa)
+plot(starwars_wa,giant_component,main="Karate network with maximal modularity")
+```
+
+# Assortativity
+```{r}
+assortativity_degree(network,V(network))
+```
+
+```{r}
+degree_starwars <- igraph::degree(network)
+starwars_degrees <- matrix(NA,nrow=ecount(network),ncol=2)
+edges_starwars <- get.edgelist(network)
+for (i in 1:ecount(network)){starwars_degrees[i,] <- degree_starwars[edges_starwars[i,]]}
+plot(starwars_degrees,pch=19,col="deepskyblue2",main="Degree pairs for the Starwars network",
+     xlab="Degree",ylab="Degree")
+```
