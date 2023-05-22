@@ -25,7 +25,7 @@ for (pkg in packages) {
     library(pkg, character.only = TRUE)
   }
 }
-remotes::install_github("mattflor/chorddiag")
+#remotes::install_github("mattflor/chorddiag")
 library(chorddiag)
 ```
 
@@ -530,7 +530,7 @@ plot(starwars_op,giant_component,main="Karate network with maximal modularity")
 starwars_fg <- cluster_fast_greedy(giant_component)
 sizes(starwars_fg)
 modularity(starwars_fg)
-plot(starwars_fg,giant_component,main="Karate network with maximal modularity")
+plot(starwars_fg,giant_component,main="Karate network with fast greedy")
 ```
 
 ## Louvain algorithm
@@ -538,7 +538,7 @@ plot(starwars_fg,giant_component,main="Karate network with maximal modularity")
 starwars_lv <- cluster_louvain(giant_component)
 sizes(starwars_lv)
 modularity(starwars_lv)
-plot(starwars_lv,giant_component,main="Karate network with maximal modularity")
+plot(starwars_lv,giant_component,main="Karate network with Louvain")
 ```
 
 ## Label propagation algorithm
@@ -546,7 +546,7 @@ plot(starwars_lv,giant_component,main="Karate network with maximal modularity")
 starwars_lp <- cluster_label_prop(giant_component,initial=as.vector(membership(starwars_lv)))
 sizes(starwars_lp)
 modularity(starwars_lp)
-plot(starwars_lp,giant_component,main="Karate network with maximal modularity")
+plot(starwars_lp,giant_component,main="Karate network with label propagation")
 ```
 
 ## Walktrap algorithm
@@ -554,7 +554,15 @@ plot(starwars_lp,giant_component,main="Karate network with maximal modularity")
 starwars_wa <- cluster_walktrap(giant_component)
 sizes(starwars_wa)
 modularity(starwars_wa)
-plot(starwars_wa,giant_component,main="Karate network with maximal modularity")
+plot(starwars_wa,giant_component,main="Karate network with walktrap")
+```
+
+## Edge betweenness
+```{r}
+starwars_eb <- cluster_edge_betweenness(giant_component, weights=1/E(giant_component)$weight)
+sizes(starwars_eb)
+modularity(starwars_eb)
+plot(starwars_eb,giant_component,main="Karate network with edge betweenness")
 ```
 
 # Assortativity
@@ -570,3 +578,142 @@ for (i in 1:ecount(network)){starwars_degrees[i,] <- degree_starwars[edges_starw
 plot(starwars_degrees,pch=19,col="deepskyblue2",main="Degree pairs for the Starwars network",
      xlab="Degree",ylab="Degree")
 ```
+
+# Random graph models and community detection
+
+We are now going to use random graph models, both classical and generalized, to asses the numbe rof communities we got form the different algorithms. We first check the number of communities given by each of them:
+
+```{r}
+length(starwars_op)
+length(starwars_fg)
+length(starwars_lv)
+length(starwars_wa)
+length(starwars_lp)
+length(starwars_eb)
+```
+
+We are going to exclude optimal modularity due to its high computational cost. We generate 10000 networks using both the Erdös and Rényi model with 110 vertices and 444 edges, and a generalized random graph using the degree sequence:
+
+```{r}
+N = vcount(giant_component)
+L = ecount(giant_component)
+n = 1000
+
+degree_gc = degree(giant_component)
+
+set.seed(1024)
+
+num_comm_ER_fg = vector(mode="numeric",length=n)
+num_comm_ER_lo = vector(mode="numeric",length=n)
+num_comm_ER_lp = vector(mode="numeric",length=n)
+num_comm_ER_eb = vector(mode="numeric",length=n)
+num_comm_ER_wa = vector(mode="numeric",length=n)
+num_comm_G_fg = vector(mode="numeric",length=n)
+num_comm_G_lo = vector(mode="numeric",length=n)
+num_comm_G_lp = vector(mode="numeric",length=n)
+num_comm_G_eb = vector(mode="numeric",length=n)
+num_comm_G_wa = vector(mode="numeric",length=n)
+
+options(warn=-1)
+for(i in 1:n){
+  ER_starwars = sample_gnm(n=N,m=L)
+  G_starwars = sample_degseq(degree_gc,method="vl")
+  
+  num_comm_ER_fg[i]= length(cluster_fast_greedy(ER_starwars))
+  num_comm_G_fg [i]= length(cluster_fast_greedy(G_starwars ))
+  
+  louvain_ER = cluster_louvain(ER_starwars)
+  louvain_G  = cluster_louvain(G_starwars )
+  
+  num_comm_ER_lo[i]= length(louvain_ER)
+  num_comm_G_lo [i]= length(louvain_G )
+  
+  num_comm_ER_lp[i]= length(cluster_label_prop(ER_starwars,initial=as.vector(membership(louvain_ER))))
+  num_comm_G_lp [i]= length(cluster_label_prop(G_starwars ,initial=as.vector(membership(louvain_G ))))
+  
+  num_comm_ER_wa[i]= length(cluster_walktrap(ER_starwars))
+  num_comm_G_wa [i]= length(cluster_walktrap(G_starwars ))
+  
+  num_comm_ER_eb[i]= length(cluster_edge_betweenness(ER_starwars, directed = FALSE))
+  num_comm_G_eb [i]= length(cluster_edge_betweenness(G_starwars , directed = FALSE))
+}
+options(warn=0)
+```
+
+We can now show the results and compare with the number of communities we obtain for each method:
+
+```{r}
+comm_ER_G_fg <- c(num_comm_ER_fg,num_comm_G_fg)
+ind_comm_ER_G_fg <- c(rep(1,n),rep(2,n))
+freqs_comm_ER_G_fg <- table(ind_comm_ER_G_fg,comm_ER_G_fg) / n
+freqs_comm_ER_G_fg
+
+comm_ER_G_lo <- c(num_comm_ER_lo,num_comm_G_lo)
+ind_comm_ER_G_lo <- c(rep(1,n),rep(2,n))
+freqs_comm_ER_G_lo <- table(ind_comm_ER_G_lo,comm_ER_G_lo) / n
+freqs_comm_ER_G_lo
+
+comm_ER_G_lp <- c(num_comm_ER_lp,num_comm_G_lp)
+ind_comm_ER_G_lp <- c(rep(1,n),rep(2,n))
+freqs_comm_ER_G_lp <- table(ind_comm_ER_G_lp,comm_ER_G_lp) / n
+freqs_comm_ER_G_lp
+
+comm_ER_G_eb <- c(num_comm_ER_eb,num_comm_G_eb)
+ind_comm_ER_G_eb <- c(rep(1,n),rep(2,n))
+freqs_comm_ER_G_eb <- table(ind_comm_ER_G_eb,comm_ER_G_eb) / n
+freqs_comm_ER_G_eb
+
+comm_ER_G_wa <- c(num_comm_ER_wa,num_comm_G_wa)
+ind_comm_ER_G_wa <- c(rep(1,n),rep(2,n))
+freqs_comm_ER_G_wa <- table(ind_comm_ER_G_wa,comm_ER_G_wa) / n
+freqs_comm_ER_G_wa
+```
+
+
+```{r}
+barplot(freqs_comm_ER_G_fg,beside=TRUE, col = c(3,4),
+        main="Fast greedy",
+        xlab="Number of communities",ylab="Relative frequencies",
+        legend=c("Same size","Same degree sequence"),args.legend = list(x="right"))
+```
+
+We observe that fr fast greedy, the result we got (6) corresponds to the most frequent one from the Erdös and Rényi model, although int he case of the generalized random graphs, the most frequent is 7. It seems 6 is a good number
+
+```{r}
+barplot(freqs_comm_ER_G_lo,beside=TRUE,col = c(3,4),
+        main="Louvain",
+        xlab="Number of communities",ylab="Relative frequencies",
+        legend=c("Same size","Same degree sequence"))
+```
+
+
+In the case of Louvain, both methods get 7 as the most frequent number of communities, while the one we got was 5, which has a very low frequency. this suggest that 5 is not a correct number of communities using this method.
+
+```{r}
+barplot(freqs_comm_ER_G_lp,beside=TRUE,col = c(3,4),
+        main="Label propagation",
+        xlab="Number of communities",ylab="Relative frequencies",
+        legend=c("Same size","Same degree sequence"))
+```
+
+Label propagation gave 3 groups, while the barplot suggest only one group.
+
+```{r}
+barplot(freqs_comm_ER_G_eb,beside=TRUE,col = c(3,4),
+        main="Edge betweenness",
+        xlab="Number of communities",ylab="Relative frequencies",
+        legend=c("Same size","Same degree sequence"))
+```
+
+Edge betweenness after Louvain suggested 5 communities, while the most frequent number of communities in the simulation are 30 (for ER) and 39 (for GRG). It seems 5 is not a good number either.
+
+```{r}
+barplot(freqs_comm_ER_G_wa,beside=TRUE,col = c(3,4),
+        main="Walktrap ",
+        xlab="Number of communities",ylab="Relative frequencies",
+        legend=c("Same size","Same degree sequence"))
+```
+
+Walktrap gave 16 communities and in both barplots 16 has a very low frequency, so it seems this is not a good choice either. It is interesting to highlight that the results greatly differ depending on the method we use (ER or GRG), which suggest that the number of communities is not easy to select.
+
+In conclusion, although in the first part we used our knowledge of the topic to select subnetworks that were of interest, community detection using classical and generalized random graphs do not give any robust result about the numbe rof communities and their components.
