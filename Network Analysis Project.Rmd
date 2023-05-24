@@ -29,7 +29,7 @@ for (pkg in packages) {
 library(chorddiag)
 ```
 
-## Part 1 
+# Part 1 
 **1) Explain the network including which vertices and edges form it, as well as any additional attributes that may form the network, its vertices and/or its edges.**
 
 We are going to study a Star Wars social network (this network was downloaded from kaggle at <https://www.kaggle.com/datasets/ruchi798/star-wars>). The nodes of this network are the characters of the first seven films and they are connected if they speak with each other in the same scene (this corresponds to the file "starwars-full-interactions-allCharacters-merged.json" from the downloaded data). 
@@ -332,9 +332,9 @@ adj_matrix <- as_adjacency_matrix(network,attr = "weight",sparse = T)
 chorddiag(as.matrix(adj_matrix),showTicks = FALSE, margin = 40, groupnameFontsize = 4)
 ```
 
-## Centrality meassures
+# Centrality meassures
 
-### Vertex centrality meassures
+## Vertex centrality meassures
 
 Let's examine some centrality measures to determine which character in the Star Wars saga has the most significance based on interactions.
 
@@ -372,7 +372,7 @@ According to their connections and the influence of those connections, character
 
 
 
-### Edge centrality meassures
+## Edge centrality meassures
 The most common way to assess the centrality of an edge is by using edge betweenness. As previously, we will determine the betweenness centrality both with and without weights.
 
 ```{r}
@@ -389,7 +389,7 @@ sw_weighted_betweenness$x[1:5]
 ```
 In this instance, Darth Vader still retains the title of the most significant character in the franchise, followed by R2-D2 and Han. It is worth noting that C-3PO and Obi-Wan are also included in the top five once more.
 
-## Density of the network
+# Density of the network
 
 To study the density of the network, we can examine the number of cliques and the length of the maximal cliques. A clique is a subset of nodes in a network where each node is directly connected to every other node in the subset. The length of a clique refers to the number of nodes within that clique.
 ```{r}
@@ -447,7 +447,7 @@ edge_density(network)
 ```
 The calculated density of approximately 0.0727 indicates that the network is sparse. This means that the actual connections between the nodes represent a small proportion of all possible connections, indicating a relatively low level of overall connectivity in the network.
 
-## Network connectivity
+# Network connectivity
 
 Now, lets take a closer look to the network connectivity. To do so, we will extract the Giant Connected Component (GCC) of the network of characters
 ```{r}
@@ -478,7 +478,7 @@ Despite the low density previously found, the clustering coefficient of 0.35 sug
 
 Furthermore, the average shortest path length of 3.9 indicates a relatively short path required to travel from one node to another. Despite the sparse nature of the network, the network is relatively well-connected.
 
-## Small-World like structure
+# Small-World like structure
 
 Since the small-world property appears to hold, lets check if such structure is actually present. To do so, we will generate large number of random networks with the same number of vertices and edges than those of the Star Wars network. Then, for each network we obtain the clustering coefficient and the average path length.
 ```{r}
@@ -505,70 +505,197 @@ With the results obtained, we can confirm that our network does not hold the Sma
 
 This former analysis suggest that our network has a tendency to form groups between characters, but those connections are relatively distant, even among the characters of the same group. In the context of the movies, this result is reflected since each character has its own storyline and these arc-lines are not commonly influenced by other characters of the same team. 
 
-## Community detection
+# Community detection
+
+Also called Graph Partitioning, it is a useful tool for finding subsets of vertices that demonstrate a cohesiveness with respect to the underlying relational patterns. The idea is to obtain a partition $\mathcal{C}=\lbrace C_1,\ldots,C_K\rbrace$ of the set (where $K$ is to be determined) that enhances the number of edges between nodes of a same block, and minimized the edges between blocks, thus creating the sense of communities.
+
+To do so, we quantify the quality of the partition through a measure called **modularity**, that is defined as
+$$mod(\mathcal{C}) := \frac{1}{2L}\sum_{k=1}^Kmod(C_k)\in[−1,1],$$
+
+where $mod(C_k):=\sum_{u,v\in C_k}(A_{uv} - P_{uv})$, $P_{uv} =\frac{du dv}{2L}$ and $A_{uv}$ is the element $(u,v)$ of the adjacency matrix.
+
+If the network has a community structure given by $\mathcal{C}$, then $\sum_{u,v \in C_k}A_{uv}$ will be significatively larger than $\sum_{u,v \in C_k}P_{uv}$. The more positive the modularity, the better the vertex partition.
+
+There are several algorithms to carry out community detection, it is not an universal law. We will apply all the ones we know and decide which one performs best. Later on, we will focus on  making community detection for a certain subgraph to have a more manageable and visualizable result.
 
 ## Maximal modularity
+
+Find the partition that maximizes the modularity.
+
 ```{r}
 starwars_op <- cluster_optimal(giant_component)
-starwars_op
-```
-
-```{r}
 sizes(starwars_op)
-```
-
-```{r}
 modularity(starwars_op)
 ```
 
-```{r}
-plot(starwars_op,giant_component,main="Karate network with maximal modularity")
-```
-
 ## Fast greedy algorithm
+
+Simplification of the previous method to allow for large networks.
+
 ```{r}
 starwars_fg <- cluster_fast_greedy(giant_component)
 sizes(starwars_fg)
 modularity(starwars_fg)
-plot(starwars_fg,giant_component,main="Karate network with fast greedy")
 ```
 
 ## Louvain algorithm
+
+Similar idea as optimal modularity but the optimization is done using a
+hierarchical approach.
+
 ```{r}
 starwars_lv <- cluster_louvain(giant_component)
 sizes(starwars_lv)
 modularity(starwars_lv)
-plot(starwars_lv,giant_component,main="Karate network with Louvain")
 ```
 
 ## Label propagation algorithm
+
+Decide the communities locally using the vertex neighborhood.
+
 ```{r}
 starwars_lp <- cluster_label_prop(giant_component,initial=as.vector(membership(starwars_lv)))
 sizes(starwars_lp)
 modularity(starwars_lp)
-plot(starwars_lp,giant_component,main="Karate network with label propagation")
 ```
 
 ## Walktrap algorithm
+
+Use hierarchical clustering with distances between vertices.
+
 ```{r}
 starwars_wa <- cluster_walktrap(giant_component)
 sizes(starwars_wa)
 modularity(starwars_wa)
-plot(starwars_wa,giant_component,main="Karate network with walktrap")
 ```
 
 ## Edge betweenness
+
+Based on the edge betweenness of the set of edges in the network.
+
 ```{r}
 starwars_eb <- cluster_edge_betweenness(giant_component, weights=1/E(giant_component)$weight)
 sizes(starwars_eb)
 modularity(starwars_eb)
-plot(starwars_eb,giant_component,main="Karate network with edge betweenness")
+```
+
+## Spin-glass
+
+This function tries to find communities in graphs via a spin-glass model and simulated annealing. It is important to take into account that this method usually overestimates the number of communities when the network is large.
+
+```{r}
+set.seed(2463)
+starwars_sg <- cluster_spinglass(giant_component, weights=1/E(giant_component)$weight)
+sizes(starwars_sg)
+modularity(starwars_sg)
+```
+
+## Leading eigenvector
+
+Calculates the eigenvector of the modularity matrix for the largest positive eigenvalue and then separating vertices into two community based on the sign of the corresponding element in the eigenvector.
+
+```{r}
+starwars_le <- cluster_leading_eigen(giant_component, weights=1/E(giant_component)$weight)
+sizes(starwars_le)
+modularity(starwars_le)
+```
+
+## Analysis and display
+
+### Graphical display of communities
+
+Let's now plot the ones with highest modularity (fast greedy and optimal modularity give the same result): spinglass, leading eigenvectors, fast greedy and Louvain:
+
+```{r, fig.asp=1}
+plot(starwars_sg,giant_component,main="Star Wars network with Spinglass", edge.color = 'darkgrey', edge.width = rescale(E(giant_component)$value, to = c(1,5)), vertex.size = 8, vertex.label = V(giant_component)$name.real, vertex.label.color = "black",
+              vertex.label.cex = 0.75)
+plot(starwars_le,giant_component,main="Star Wars network with leading eigenvalues", edge.color = 'darkgrey', edge.width = rescale(E(giant_component)$value, to = c(1,5)), vertex.size = 8, vertex.label = V(giant_component)$name.real, vertex.label.color = "black",
+              vertex.label.cex = 0.75)
+plot(starwars_fg,giant_component,main="Star Wars network with fast greedy", edge.color = 'darkgrey', edge.width = rescale(E(giant_component)$value, to = c(1,5)), vertex.size = 8, vertex.label = V(giant_component)$name.real, vertex.label.color = "black",
+              vertex.label.cex = 0.75)
+plot(starwars_lv,giant_component,main="Star Wars network with Louvain", edge.color = 'darkgrey', edge.width = rescale(E(giant_component)$value, to = c(1,5)), vertex.size = 8, vertex.label = V(giant_component)$name.real, vertex.label.color = "black",
+              vertex.label.cex = 0.75)
+```
+
+### Analysis of the communities
+
+For a better visualization we are going to use the method with the highest modularity, which is spinglass. We create subnetworks to plot these communities.
+
+```{r, fig.width=10, fig.height=7}
+m = matrix(1:(length(starwars_sg)+length(starwars_sg)%%2),byrow=TRUE,ncol=ceiling(length(starwars_sg)/2))
+layout(m)
+for (i in 1:length(starwars_sg)){
+  comm = delete.vertices(giant_component, starwars_sg$membership != i)
+  plot(comm, layout = layout_as_star, main = i,vertex.size = rescale(V(giant_component)$value, 
+                                                            to =c(10,25))[match(V(comm)$name.real,V(giant_component)$name.real)], 
+       vertex.label = V(comm)$name.real, vertex.label.color = "black", vertex.label.cex = 0.6)
+}
+```
+
+We observe that the resulting communities are not balanced in the number of components each one has. We are now going to perform a bit of a "geek analysis" of the communities:
+
+- The first community is formed of background characters that belong to the Rebel Alliance.
+- The second community contains different acquaintances of Darth Vader/Anakin Skywalker, from the original and second trilogies. 
+- The third community is formed around Obi-Wan Kenobi, and contains mainly characters from the prequels trilogy. 
+- The fourth community contains R2-D2, some of Luke's relatives and other background characters.
+- The fifth one is has Luke Skywalker as center, and some rebel characters and one of Jabba's henchmen.
+- The sixth community has Padme as center, with several background characters connected to her (relatives and people from Tatooine). It is worth mentioning that Jabba appears here, even though he is not directly connected to her, since they are from two different trilogies.
+- The seventh community contains most of the main characters from the original trilogy (Han, Leia, Chewbacca, C-3PO) together with the main characters and antagonists of the sequels (Finn, Rey, Kylo Ren,...) and other background characters.
+- The last community contains most of the characters from the prequels (most of the jedi, Darth Maul, some clones,...).
+
+It is interesting that some of these communities are centered around an influencers (communities 2 to 6), while the two last communities contain a much larger number of characters more or less divided between orignal trilogy + sequels and prequels characters. The first community is a kind-off anomaly, since it contains a small group of non-relevant characters.
+
+### Community detection in a subnetwork
+
+All these results are very informative about the nature of the global network but they are not very visual, given the size of the set.
+
+Now, we are going to compute the modularity these algorithms give when applied to a more manageable subnetwork and plot the one with the best result. In particular, we are going to define a new subnetwork based on the importance of the nodes (we delete those with value less than a $16$% of the maximum value of the nodes).
+
+```{r}
+subnetwork5 <- delete.vertices(network, V(network)$value<max(V(network)$value)*0.16)
+```
+
+We compute the modularities
+
+```{r}
+modularity(cluster_optimal(subnetwork5))
+modularity(cluster_fast_greedy(subnetwork5))
+modularity(cluster_louvain(subnetwork5))
+modularity(cluster_label_prop(subnetwork5))
+modularity(cluster_walktrap(subnetwork5))
+modularity(cluster_edge_betweenness(subnetwork5))
+modularity(cluster_leading_eigen(subnetwork5))
+modularity(cluster_spinglass(subnetwork5))
+```
+
+and see that the ones that yield best result are Optimal clustering, Fast greedy, Louvain and Leading eigenvector. After a quick inspection, we see that the clustering achieved with these algorithms are all the same. We plot just one of them alongside the basic plot of the network to see how the clustering network was hidden
+
+```{r}
+starwars_op_sub <- cluster_optimal(subnetwork5)
+par(mfrow=c(1,2))
+plot(subnetwork5,main="Principal characters", edge.color = 'darkgrey', edge.width = rescale(E(subnetwork5)$value, to = c(1,5)), vertex.size = 8, vertex.label = V(subnetwork5)$name.real, vertex.label.color = "black",vertex.label.cex = 0.75)
+plot(starwars_op_sub,subnetwork5,main="Principal characters clustering", edge.color = 'darkgrey', edge.width = rescale(E(subnetwork5)$value, to = c(1,5)), vertex.size = 8, vertex.label = V(subnetwork5)$name.real, vertex.label.color = "black",vertex.label.cex = 0.75)
 ```
 
 # Assortativity
+
+The idea here is to understand how influential characters relate between them, the same for non influential characters, and to see how is the relation between these two groups. This is estimated with the assortativity coefficient, $r_a$, and allows us to distinguish between:
+
+- neutral networks, where number of edges between the influencers/hubs coincides with what we expect by chance ($r_a$ close to $0$).
+
+- assortative networks, where influencers tend to link to each other avoiding relation with small degree vertices, and the same for small degree vertices with respect to influencers. There are classes defined by influence ($r_a$ close to $1$).
+
+- dissasortative networks, the influencers/hubs avoid each other, linking instead to small-degree vertices ($r_a$ close to $-1$).
+
+The assortativity coefficient of a network is the sample correlation coefficient of the pairs of vertex degrees corresponding to the L edges of the network. In our case we have:
+
 ```{r}
 assortativity_degree(network,V(network))
 ```
+
+So, the star wars network is something between neutral and dissasortative. This is coherent with what we previously said about the idea that each character has its own storyline and these arc-lines are not commonly influenced by other characters of the same team. Each main character somehow "travels alone" throughout the story even though its path intertwines with that of the others and they are constantly related, and along the way they interact with many low level characters, which conform the mentioned story line. This is evidenced, for instance, in the story of Luke, which is physically separated from Han and Leia, or the villains that appear a lot but not necessarily interacting with the heroes. Another example is found in the new trilogy, where Rey, Finn and Poe barely see each other for most part of the movies. However, this is not extremely rigorous and there are many casual encounters, also with minor characters and that is why the coefficient is also close to $0$, showing some neutral network behavior.
+
+We can plot the degrees of the vertices corresponding to all the edges in the network
 
 ```{r}
 degree_starwars <- igraph::degree(network)
@@ -578,6 +705,7 @@ for (i in 1:ecount(network)){starwars_degrees[i,] <- degree_starwars[edges_starw
 plot(starwars_degrees,pch=19,col="deepskyblue2",main="Degree pairs for the Starwars network",
      xlab="Degree",ylab="Degree")
 ```
+
 
 # Random graph models and community detection
 
@@ -592,7 +720,7 @@ length(starwars_lp)
 length(starwars_eb)
 ```
 
-We are going to exclude optimal modularity due to its high computational cost. We generate 10000 networks using both the Erdös and Rényi model with 110 vertices and 444 edges, and a generalized random graph using the degree sequence:
+We are going to exclude optimal modularity due to its high computational cost. We generate 10000 networks using both the Erdös and Rényi model with 110 vertices and 444 edges, and a generalized random graph using the degree sequence. We then apply each of the community detection methods to the generated graphs (ecluding Spinglss, since it can not be used when we have unconnected graphs) and compare the average numbe rof communities with the number we got:
 
 ```{r}
 N = vcount(giant_component)
@@ -608,11 +736,13 @@ num_comm_ER_lo = vector(mode="numeric",length=n)
 num_comm_ER_lp = vector(mode="numeric",length=n)
 num_comm_ER_eb = vector(mode="numeric",length=n)
 num_comm_ER_wa = vector(mode="numeric",length=n)
+num_comm_ER_eg = vector(mode="numeric",length=n)
 num_comm_G_fg = vector(mode="numeric",length=n)
 num_comm_G_lo = vector(mode="numeric",length=n)
 num_comm_G_lp = vector(mode="numeric",length=n)
 num_comm_G_eb = vector(mode="numeric",length=n)
 num_comm_G_wa = vector(mode="numeric",length=n)
+num_comm_G_eg = vector(mode="numeric",length=n)
 
 options(warn=-1)
 for(i in 1:n){
@@ -636,6 +766,9 @@ for(i in 1:n){
   
   num_comm_ER_eb[i]= length(cluster_edge_betweenness(ER_starwars, directed = FALSE))
   num_comm_G_eb [i]= length(cluster_edge_betweenness(G_starwars , directed = FALSE))
+  
+  num_comm_ER_eg[i] =length(cluster_leading_eigen(ER_starwars))
+  num_comm_G_eg [i]= length(cluster_leading_eigen(G_starwars ))  
 }
 options(warn=0)
 ```
@@ -646,27 +779,26 @@ We can now show the results and compare with the number of communities we obtain
 comm_ER_G_fg <- c(num_comm_ER_fg,num_comm_G_fg)
 ind_comm_ER_G_fg <- c(rep(1,n),rep(2,n))
 freqs_comm_ER_G_fg <- table(ind_comm_ER_G_fg,comm_ER_G_fg) / n
-freqs_comm_ER_G_fg
 
 comm_ER_G_lo <- c(num_comm_ER_lo,num_comm_G_lo)
 ind_comm_ER_G_lo <- c(rep(1,n),rep(2,n))
 freqs_comm_ER_G_lo <- table(ind_comm_ER_G_lo,comm_ER_G_lo) / n
-freqs_comm_ER_G_lo
 
 comm_ER_G_lp <- c(num_comm_ER_lp,num_comm_G_lp)
 ind_comm_ER_G_lp <- c(rep(1,n),rep(2,n))
 freqs_comm_ER_G_lp <- table(ind_comm_ER_G_lp,comm_ER_G_lp) / n
-freqs_comm_ER_G_lp
 
 comm_ER_G_eb <- c(num_comm_ER_eb,num_comm_G_eb)
 ind_comm_ER_G_eb <- c(rep(1,n),rep(2,n))
 freqs_comm_ER_G_eb <- table(ind_comm_ER_G_eb,comm_ER_G_eb) / n
-freqs_comm_ER_G_eb
 
 comm_ER_G_wa <- c(num_comm_ER_wa,num_comm_G_wa)
 ind_comm_ER_G_wa <- c(rep(1,n),rep(2,n))
 freqs_comm_ER_G_wa <- table(ind_comm_ER_G_wa,comm_ER_G_wa) / n
-freqs_comm_ER_G_wa
+
+comm_ER_G_eg <- c(num_comm_ER_eg,num_comm_G_eg)
+ind_comm_ER_G_eg <- c(rep(1,n),rep(2,n))
+freqs_comm_ER_G_eg <- table(ind_comm_ER_G_eg,comm_ER_G_eg) / n
 ```
 
 
@@ -675,6 +807,7 @@ barplot(freqs_comm_ER_G_fg,beside=TRUE, col = c(3,4),
         main="Fast greedy",
         xlab="Number of communities",ylab="Relative frequencies",
         legend=c("Same size","Same degree sequence"),args.legend = list(x="right"))
+abline(v=8,col="red")
 ```
 
 We observe that fr fast greedy, the result we got (6) corresponds to the most frequent one from the Erdös and Rényi model, although int he case of the generalized random graphs, the most frequent is 7. It seems 6 is a good number
@@ -684,6 +817,7 @@ barplot(freqs_comm_ER_G_lo,beside=TRUE,col = c(3,4),
         main="Louvain",
         xlab="Number of communities",ylab="Relative frequencies",
         legend=c("Same size","Same degree sequence"))
+abline(v=length(starwars_lv),col="red")
 ```
 
 
@@ -694,6 +828,7 @@ barplot(freqs_comm_ER_G_lp,beside=TRUE,col = c(3,4),
         main="Label propagation",
         xlab="Number of communities",ylab="Relative frequencies",
         legend=c("Same size","Same degree sequence"))
+abline(v=length(starwars_lp)*3-1,col="red")
 ```
 
 Label propagation gave 3 groups, while the barplot suggest only one group.
@@ -702,6 +837,7 @@ Label propagation gave 3 groups, while the barplot suggest only one group.
 barplot(freqs_comm_ER_G_eb,beside=TRUE,col = c(3,4),
         main="Edge betweenness",
         xlab="Number of communities",ylab="Relative frequencies",
+        #xlim = c(1,as.numeric(max(colnames(freqs_comm_ER_G_eb)))*3),
         legend=c("Same size","Same degree sequence"))
 ```
 
@@ -712,8 +848,21 @@ barplot(freqs_comm_ER_G_wa,beside=TRUE,col = c(3,4),
         main="Walktrap ",
         xlab="Number of communities",ylab="Relative frequencies",
         legend=c("Same size","Same degree sequence"))
+abline(v=41,col="red")
 ```
 
 Walktrap gave 16 communities and in both barplots 16 has a very low frequency, so it seems this is not a good choice either. It is interesting to highlight that the results greatly differ depending on the method we use (ER or GRG), which suggest that the number of communities is not easy to select.
 
-In conclusion, although in the first part we used our knowledge of the topic to select subnetworks that were of interest, community detection using classical and generalized random graphs do not give any robust result about the numbe rof communities and their components.
+```{r}
+barplot(freqs_comm_ER_G_eg,beside=TRUE, col = c(3,4),
+        main="Leading eigenvectors",
+        xlab="Number of communities",ylab="Relative frequencies",
+        legend=c("Same size","Same degree sequence"),args.legend = list(x="right"))
+abline(v=11,col="red")
+```
+
+Again, we do not get a similar result as the one we got from our network.
+
+In conclusion, although in the first part we used our knowledge of the topic to select subnetworks that were of interest, community detection using classical and generalized random graphs do not give any robust result about the number of communities and their components.
+
+Nevertheless, we have been able to find a reasonable approach to the selected number of communities of the method with highest modularity, Spinglass (again, it is worth mentioning that this method tends to overestimate the number of communities).
